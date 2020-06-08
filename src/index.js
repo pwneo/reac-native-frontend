@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StatusBar, StyleSheet, Text, FlatList, TouchableOpacity} from 'react-native';
+import {SafeAreaView, StatusBar, StyleSheet, Text, FlatList, TouchableOpacity, View, Button} from 'react-native';
 import api from './services/api';
 
 export default function App() {
@@ -16,12 +16,23 @@ export default function App() {
             title: 'Projeto Teste',
             owner: 'Paulo W. A. Ferreira',
             createdAt: Date.now()
-        }).then(response =>{
+        }).then(response => {
             setProjects([...projects, response.data]);
+            console.log('Id do projeto criado: ', response.data._id);
         });
     }
 
-
+    function handlerRemoveProject(id) {
+        console.log('Id do projeto pra ser removido: ', id);
+        api.delete(`projects/${id}`).then(response => {
+            const index = projects.findIndex(project => project._id === id);
+            if (index < 0){
+                return;
+            }
+            projects.splice(index, 1);
+            setProjects([...projects]);
+        })
+    }
 
     return (
         <>
@@ -31,7 +42,14 @@ export default function App() {
                     data={projects}
                     keyExtractor={project => project._id}
                     renderItem={({item: project}) => (
-                        <Text style={styles.nameProject}>{project.title}</Text>
+                        <>
+                            <Text style={styles.nameProject}>{project.title}</Text>
+                            <Text style={styles.owner}>{project.owner}</Text>
+                            <TouchableOpacity onPress={() => handlerRemoveProject(project._id)}>
+                                <Text style={styles.remove}>Remover</Text>
+                            </TouchableOpacity>
+                            <Text/>
+                        </>
                     )}
                 />
                 <TouchableOpacity
@@ -55,10 +73,15 @@ const styles = StyleSheet.create({
     },
     nameProject: {
         color: '#ffffff',
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold'
     },
     owner: {
+        color: '#ffffff',
+        fontSize: 18,
+        fontWeight: 'bold'
+    },
+    remove: {
         color: '#ffffff',
         fontSize: 14,
         fontWeight: 'bold'
